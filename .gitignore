@@ -1,0 +1,6 @@
+.idea
+*.pyc
+*.env
+__pycache__
+.venv
+video/
