@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import math
 
 # 색상 범위 설정
 COLOR_RANGES = {
@@ -56,6 +57,35 @@ def get_individual_contours_features_as_array(image, color):
           else:
             cv2.rectangle(image, (x, y), (x + 2, y + 2), (0, 0, 255), 2)#빨강 중심점
   return np.array(features), mask
+
+def compare_prev_and_present(prev, present):
+  # Unpack the previous and present values
+  prev_contour, prev_center = prev
+  present_contour, present_center = present
+
+  # Calculate the difference in centers
+  center_distance = math.sqrt((prev_center[0] - present_center[0]) ** 2 + (prev_center[1] - present_center[1]) ** 2)
+  # Check if the center is within 50 pixels
+  is_center_close = center_distance < 50
+
+  # Calculate the sizes of the rectangles
+  prev_width = prev_contour[2] - prev_contour[0]
+  prev_height = prev_contour[3] - prev_contour[1]
+  present_width = present_contour[2] - present_contour[0]
+  present_height = present_contour[3] - present_contour[1]
+
+  # Check if the sizes are within 50 pixels difference
+  is_size_similar = abs(prev_width - present_width) < 60 and abs(prev_height - present_height) < 60
+
+  # Return True if both conditions are met
+  return is_center_close and is_size_similar
+
+if __name__ == '__main__':
+  prev_contour = [1547.25, 409.5, 1887.75, 624.75]
+  prev_center = [1717.5, 517.125]
+  contour = [12.333333333333334, 543.6666666666666, 338.6666666666667, 737.0]
+  center = [170.375, 638.25]
+  a = compare_prev_and_present([prev_contour, prev_center], [contour, center])
 
 # def get_contours_features_as_array(image, color, other_features=[]):
 #   lower, upper = COLOR_RANGES[color]

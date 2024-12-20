@@ -1,7 +1,8 @@
 import cv2
 from clustering import cluster_contour_features, cluster_contour_by_center
-from contour import unnamed
+from contour import unnamed, compare_prev_and_present
 from video_utils import get_total_frames_and_cap, get_roof_images_as_array
+import numpy as np
 
 video_path = 'video/video.webm'
 EPS = 35
@@ -12,7 +13,10 @@ if total_frame < 0:
   run = False
 per_number = 10
 ten_total_frame = int(total_frame / per_number)
-roof_count = per_number - 6
+roof_count = per_number - 1
+
+prev_contour = []
+prev_center = []
 
 print(f'total_frame: {total_frame}')
 while(run):
@@ -27,7 +31,7 @@ while(run):
       if single_image_contour:
         images_contours = images_contours+single_image_contour
 
-      if 10 == 10:
+      if 10 == 101:
         cv2.imshow(f'image {idx}', image)
         #cv2.imshow(f'w_mask {start_frame}', b_mask)
         if cv2.waitKey(0) & 0xFF == ord('q'):
@@ -35,15 +39,27 @@ while(run):
         cv2.destroyAllWindows()
     # end for
     contour, center = cluster_contour_by_center(images_contours, 50)
-    print(contour, center)
-    #total_intersection_area(images_contours)
+
+    if np.any(prev_contour) and np.any(prev_center):
+      prev = [prev_contour, prev_center]
+      present = [contour, center]
+      is_same_place = compare_prev_and_present(prev, present)
+      if not is_same_place:
+        print('위치가 변경되었다!@##!@#@!#@')
+        
+    else:
+      print('최초니까 일단은 넘어갑니다')
     
+    prev_contour = contour
+    prev_center = center
+  # end if  
   roof_count = roof_count - 1
   if roof_count < 1:
     break
   else:
-    break
-
+    if roof_count == 6:
+      break
+# end while
 
 
 
